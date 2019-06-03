@@ -3,6 +3,15 @@ set -e
 
 export PATH="/conda/bin:/usr/bin:$PATH"
 
+if [ -z $USE_GPU ]; then
+  USE_GPU=0
+fi
+
+if [ -z $PYTHON_VERSION ]; then
+  py_v=`python --version | cut -d' ' -f2`
+  PYTHON_VERSION="`echo $py_v | cut -d'.' -f1`.`echo $py_v | cut -d'.' -f2`"
+fi
+
 if [ "$USE_GPU" -eq "1" ]; then
   export CUDA_HOME="/usr/local/cuda"
   alias sudo=""
@@ -23,7 +32,7 @@ gcc --version
 conda config --add channels conda-forge
 conda create --yes -n tensorflow python==$PYTHON_VERSION
 source activate tensorflow
-conda install --yes numpy wheel bazel==$BAZEL_VERSION
+conda install --yes numpy wheel
 pip install keras-applications keras-preprocessing
 
 # Compile TensorFlow
@@ -34,7 +43,11 @@ pip install keras-applications keras-preprocessing
 
 cd /
 rm -fr tensorflow/
-git clone --depth 1 --branch $TF_VERSION_GIT_TAG "https://github.com/tensorflow/tensorflow.git"
+if [ -z $TF_VERSION_GIT_TAG ]; then
+  git clone --depth 1 "https://github.com/tensorflow/tensorflow.git"
+else
+  git clone --depth 1 --branch $TF_VERSION_GIT_TAG "https://github.com/tensorflow/tensorflow.git"
+fi
 
 TF_ROOT=/tensorflow
 cd $TF_ROOT

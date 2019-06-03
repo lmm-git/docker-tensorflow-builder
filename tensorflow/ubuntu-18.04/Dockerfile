@@ -1,6 +1,6 @@
 FROM ubuntu:18.04
 
-RUN apt update && apt install -y \
+RUN apt-get update && apt-get install -y \
     build-essential \
     curl \
     git \
@@ -9,7 +9,19 @@ RUN apt update && apt install -y \
     openjdk-8-jdk \
     gcc-7 \
     g++-7 \
+    zlib1g-dev \
+    zlib1g-dev \
+    unzip \
+    python \
+    bash-completion \
     && rm -rf /var/lib/lists/*
+
+RUN curl -L -s https://github.com/bazelbuild/bazel/releases/latest \
+| grep -o -m 1 "/bazelbuild.*/bazel_.*-linux-x86_64.deb" \
+| awk '{print "https://github.com"$1}' \
+| xargs -L 1 curl -L -s > bazel.deb
+
+RUN dpkg -i bazel.deb
 
 # Install Anaconda
 WORKDIR /
